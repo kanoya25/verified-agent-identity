@@ -20,15 +20,23 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
+      # ✅ STEP 1: pakai Node 20 untuk ClawHub
+      - name: Setup Node.js (for ClawHub)
         uses: actions/setup-node@v3
         with:
-          node-version: '18'   # ⚠️ pakai 18, JANGAN 20+
+          node-version: '20'
 
-      - name: Step 1 - Install ClawHub skill
+      - name: Install ClawHub skill
         run: npx clawhub@latest install verified-agent-identity
 
-      - name: Fix ethers version (IMPORTANT)
+      # ✅ STEP 2: turunin ke Node 18 buat script
+      - name: Switch to Node 18
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # ✅ FIX ethers
+      - name: Fix ethers version
         run: |
           cd scripts
           npm uninstall ethers
@@ -39,9 +47,9 @@ jobs:
           cd scripts
           npm install
 
-      - name: Step 2 - Create new Ethereum Identity
+      - name: Create Ethereum Identity
         run: node scripts/createNewEthereumIdentity.js
 
-      - name: Step 3 - Link Human to Agent
+      - name: Link Human to Agent
         run: |
           node scripts/manualLinkHumanToAgent.js --challenge '{"name": "kanoya25", "description": "kanoya25 AI Agent"}'
