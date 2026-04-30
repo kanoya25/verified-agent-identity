@@ -26,16 +26,19 @@ jobs:
           node-version: 20
 
       - name: Install ClawHub skill
-        run: npx clawhub@latest install verified-agent-identity
+        run: npx --yes clawhub@latest install verified-agent-identity
 
+      # ✅ FIX DI SINI
       - name: Install dependencies
         run: |
+          cd scripts
           npm install
           npm install ethers@5
 
       - name: Create Ethereum Identity
         run: node scripts/createNewEthereumIdentity.js
 
+      # ✅ FIX JSON biar aman
       - name: Link Human to Agent
         run: |
-          node scripts/manualLinkHumanToAgent.js --challenge '{"name":"kanoya25","description":"kanoya25 AI Agent"}'
+          node scripts/manualLinkHumanToAgent.js --challenge "{\"name\":\"kanoya25\",\"description\":\"kanoya25 AI Agent\"}"
