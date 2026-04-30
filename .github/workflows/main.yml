@@ -20,32 +20,30 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      # ✅ STEP 1: pakai Node 20 untuk ClawHub
-      - name: Setup Node.js (for ClawHub)
+      # ✅ WAJIB Node 20 full (jangan split 18 lagi)
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
+      # fix npm clean install biar ESM tidak rusak
+      - name: Clean install dependencies
+        run: |
+          cd scripts
+          rm -rf node_modules package-lock.json
+          npm install
+
+      # install clawhub
       - name: Install ClawHub skill
         run: npx clawhub@latest install verified-agent-identity
 
-      # ✅ STEP 2: turunin ke Node 18 buat script
-      - name: Switch to Node 18
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      # ✅ FIX ethers
-      - name: Fix ethers version
+      # 🔥 FIX ESM COMPATIBILITY (ini kunci)
+      - name: Force ESM compatible deps
         run: |
           cd scripts
-          npm uninstall ethers
-          npm install ethers@5
-
-      - name: Install dependencies
-        run: |
-          cd scripts
-          npm install
+          npm install @noble/hashes@latest
+          npm install @iden3/js-crypto@latest
+          npm install @0xpolygonid/js-sdk@latest
 
       - name: Create Ethereum Identity
         run: node scripts/createNewEthereumIdentity.js
