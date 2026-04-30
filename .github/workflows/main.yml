@@ -6,11 +6,11 @@ on:
       agent_name:
         description: 'Your agent name'
         required: true
-        default: 'kanoya25'
+        default: 'juujika'
       agent_description:
         description: 'Your agent description'
         required: true
-        default: 'kanoya25 AI Agent'
+        default: 'juujika AI Agent'
 
 jobs:
   verify:
@@ -20,34 +20,51 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      # ✅ WAJIB Node 20 full (jangan split 18 lagi)
-      - name: Setup Node.js
+      # =========================
+      # NODE 20 (ClawHub require)
+      # =========================
+      - name: Setup Node.js (ClawHub)
         uses: actions/setup-node@v3
         with:
           node-version: '20'
 
-      # fix npm clean install biar ESM tidak rusak
-      - name: Clean install dependencies
+      - name: Install ClawHub skill
+        run: npx clawhub@latest install verified-agent-identity
+
+      # =========================
+      # CLEAN INSTALL (fix ESM issues)
+      # =========================
+      - name: Install dependencies
         run: |
           cd scripts
           rm -rf node_modules package-lock.json
           npm install
 
-      # install clawhub
-      - name: Install ClawHub skill
-        run: npx clawhub@latest install verified-agent-identity
-
-      # 🔥 FIX ESM COMPATIBILITY (ini kunci)
-      - name: Force ESM compatible deps
+      # =========================
+      # FORCE COMPATIBILITY FIX
+      # =========================
+      - name: Fix crypto dependencies
         run: |
           cd scripts
           npm install @noble/hashes@latest
           npm install @iden3/js-crypto@latest
           npm install @0xpolygonid/js-sdk@latest
 
+      # =========================
+      # CREATE AGENT + HUMAN FLOW
+      # =========================
       - name: Create Ethereum Identity
         run: node scripts/createNewEthereumIdentity.js
 
-      - name: Link Human to Agent
+      - name: Link Human to Agent (dynamic challenge)
         run: |
-          node scripts/manualLinkHumanToAgent.js --challenge '{"name": "kanoya25", "description": "kanoya25 AI Agent"}'
+          node scripts/manualLinkHumanToAgent.js \
+          --challenge "{\"name\":\"${{ github.event.inputs.agent_name }}\",\"description\":\"${{ github.event.inputs.agent_description }}\"}" | tee link_output.log
+
+      # =========================
+      # DEBUG OUTPUT (IMPORTANT)
+      # =========================
+      - name: Show Result
+        run: |
+          echo "===== LINK RESULT ====="
+          cat link_output.log || true
