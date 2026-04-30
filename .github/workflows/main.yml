@@ -23,32 +23,25 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: '18'   # ⚠️ pakai 18, JANGAN 20+
 
-      - name: Install ClawHub skill
-        run: npx --yes clawhub@latest install verified-agent-identity
+      - name: Step 1 - Install ClawHub skill
+        run: npx clawhub@latest install verified-agent-identity
 
-      # 🔥 SUPER FIX (ethers + signingkey + path)
+      - name: Fix ethers version (IMPORTANT)
+        run: |
+          cd scripts
+          npm uninstall ethers
+          npm install ethers@5
+
       - name: Install dependencies
         run: |
           cd scripts
-
-          rm -rf node_modules package-lock.json
-
           npm install
 
-          npm uninstall ethers || true
+      - name: Step 2 - Create new Ethereum Identity
+        run: node scripts/createNewEthereumIdentity.js
 
-          npm install ethers@5.7.2
-          npm install @ethersproject/signing-key@5.7.0
-
-      # 🔥 jalankan dari folder yang benar
-      - name: Create Ethereum Identity
+      - name: Step 3 - Link Human to Agent
         run: |
-          cd scripts
-          node createNewEthereumIdentity.js
-
-      # 🔥 JSON aman
-      - name: Link Human to Agent
-        run: |
-          node scripts/manualLinkHumanToAgent.js --challenge "{\"name\":\"kanoya25\",\"description\":\"kanoya25 AI Agent\"}"
+          node scripts/manualLinkHumanToAgent.js --challenge '{"name": "kanoya25", "description": "kanoya25 AI Agent"}'
