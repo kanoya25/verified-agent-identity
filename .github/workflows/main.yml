@@ -28,19 +28,27 @@ jobs:
       - name: Install ClawHub skill
         run: npx --yes clawhub@latest install verified-agent-identity
 
-      # ✅ FIX npm + ethers + signingkey
+      # 🔥 SUPER FIX (ethers + signingkey + path)
       - name: Install dependencies
         run: |
           cd scripts
+
           rm -rf node_modules package-lock.json
+
           npm install
-          npm install ethers@5.7.2 @ethersproject/signing-key
 
-      # ✅ sekarang tidak error lagi
+          npm uninstall ethers || true
+
+          npm install ethers@5.7.2
+          npm install @ethersproject/signing-key@5.7.0
+
+      # 🔥 jalankan dari folder yang benar
       - name: Create Ethereum Identity
-        run: node scripts/createNewEthereumIdentity.js
+        run: |
+          cd scripts
+          node createNewEthereumIdentity.js
 
-      # ✅ JSON sudah aman
+      # 🔥 JSON aman
       - name: Link Human to Agent
         run: |
           node scripts/manualLinkHumanToAgent.js --challenge "{\"name\":\"kanoya25\",\"description\":\"kanoya25 AI Agent\"}"
